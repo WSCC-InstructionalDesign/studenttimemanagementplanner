@@ -1,187 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>2-Part Time Management Planner</title>
+  <meta charset="UTF-8">
+  <title>Time Management Planner</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 1100px; margin: auto; padding: 1em; }
     h2, h3 { text-align: center; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; font-size: 0.9em; }
     th, td { border: 1px solid #ccc; padding: 0.5em; text-align: center; vertical-align: top; }
-    input[type=number] { width: 60px; }
-    .dropzone { background: #f9f9f9; min-height: 3em; }
-    .dropzone.over { background: #d0e0ff; }
-    .activity { padding: 0.3em 0.6em; margin: 0.2em; border-radius: 4px; cursor: grab; display: inline-block; white-space: nowrap; }
-    .legend td, .drag-area { padding: 0.3em 0.5em; }
+    input[type=number], input[type=time] { width: 80px; }
+    .dropzone { background: #f9f9f9; min-height: 2em; cursor: pointer; }
+    .activity { padding: 0.3em 0.6em; margin: 0.2em; border-radius: 4px; display: inline-block; white-space: nowrap; }
     .counter, .warning { text-align: center; margin-top: 1em; font-weight: bold; }
     .warning { color: red; }
-
-    /* Color codes */
+    .match { font-size: 0.9em; color: green; }
+    .mismatch { font-size: 0.9em; color: red; }
     .Sleep { background: #cfe2f3; } .Work { background: #f4cccc; } .Personal { background: #fddde6; }
     .Grooming { background: #e6ccff; } .Fitness { background: #d9ead3; } .Household { background: #fff2cc; }
     .Meals { background: #ffe5b4; } .Family { background: #f4cccc; } .Social { background: #fce5cd; }
-    .Finance { background: #f9e7d9; } .Academic { background: #d9d9d9; } .Learning { background: #ccf2f4; }
+    .Finance { background: #f9e7d9; } .Class { background: #d9d9d9; } .Studying { background: #ccf2f4; }
     .Leisure { background: #f2e0f7; } .Errands { background: #daeaf6; }
-
-    .drag-area { display: flex; flex-wrap: wrap; gap: 0.4em; justify-content: center; margin-top: 1em; }
   </style>
 </head>
 <body>
 
-<h2>Time Management Planner</h2>
+<h2>Student Time Management Planner</h2>
 
-<!-- PART 1: TIME ESTIMATES -->
-<h3>Part 1: Estimate Your Weekly Time Usage</h3>
+<h3>Estimate Your Weekly Hours</h3>
 <form id="timeForm">
   <table>
-    <tr><th>Activity</th><th>Estimated Hours/Week</th></tr>
-    <tr><td>💤 Sleep & Rest</td><td><input type="number" name="Sleep" value="56" /></td></tr>
-    <tr><td>💼 Work & Career</td><td><input type="number" name="Work" value="20" /></td></tr>
-    <tr><td>🩺 Personal Care</td><td><input type="number" name="Personal" value="2" /></td></tr>
-    <tr><td>🧼 Grooming & Hygiene</td><td><input type="number" name="Grooming" value="5" /></td></tr>
-    <tr><td>🏋️ Exercise & Fitness</td><td><input type="number" name="Fitness" value="4" /></td></tr>
-    <tr><td>🧹 Household Tasks</td><td><input type="number" name="Household" value="4" /></td></tr>
-    <tr><td>🍽️ Cooking & Meals</td><td><input type="number" name="Meals" value="10" /></td></tr>
-    <tr><td>👨‍👩‍👧 Family Time</td><td><input type="number" name="Family" value="6" /></td></tr>
-    <tr><td>🎉 Social Activities</td><td><input type="number" name="Social" value="6" /></td></tr>
-    <tr><td>💰 Financial Mgmt</td><td><input type="number" name="Finance" value="2" /></td></tr>
-    <tr><td>📖 Learning & Development</td><td><input type="number" name="Learning" value="2" /></td></tr>
-    <tr><td>🎮 Entertainment & Leisure</td><td><input type="number" name="Leisure" value="6" /></td></tr>
-    <tr><td>🚗 Errands & Transportation</td><td><input type="number" name="Errands" value="4" /></td></tr>
-    <tr><td>📚 Academic Study (2x credit hrs)<br>
-      Credit hours: <input type="number" id="credits" value="15" style="width:50px;" onchange="calcStudyHours()" /></td>
-      <td><input type="number" name="Academic" id="Academic" readonly /></td></tr>
+    <tr><th>Activity</th><th>Estimated Hours</th><th>Scheduled</th></tr>
+    <tr><td>Sleep</td><td><input type="number" id="Sleep" value="56"></td><td id="count-Sleep">0</td></tr>
+    <tr><td>Work</td><td><input type="number" id="Work" value="40"></td><td id="count-Work">0</td></tr>
+    <tr><td>Personal Care</td><td><input type="number" id="Personal" value="5"></td><td id="count-Personal">0</td></tr>
+    <tr><td>Grooming & Hygiene</td><td><input type="number" id="Grooming" value="5"></td><td id="count-Grooming">0</td></tr>
+    <tr><td>Exercise & Fitness</td><td><input type="number" id="Fitness" value="3"></td><td id="count-Fitness">0</td></tr>
+    <tr><td>Household Tasks</td><td><input type="number" id="Household" value="5"></td><td id="count-Household">0</td></tr>
+    <tr><td>Cooking & Meals</td><td><input type="number" id="Meals" value="14"></td><td id="count-Meals">0</td></tr>
+    <tr><td>Family Time</td><td><input type="number" id="Family" value="8"></td><td id="count-Family">0</td></tr>
+    <tr><td>Social Activities</td><td><input type="number" id="Social" value="6"></td><td id="count-Social">0</td></tr>
+    <tr><td>Financial Management</td><td><input type="number" id="Finance" value="2"></td><td id="count-Finance">0</td></tr>
+    <tr><td>Class Time</td><td><input type="number" id="Class" value="15"></td><td id="count-Class">0</td></tr>
+    <tr><td>Studying</td><td><input type="number" id="Studying" value="30" readonly></td><td id="count-Studying">0</td></tr>
+    <tr><td>Entertainment & Leisure</td><td><input type="number" id="Leisure" value="10"></td><td id="count-Leisure">0</td></tr>
+    <tr><td>Errands & Transportation</td><td><input type="number" id="Errands" value="5"></td><td id="count-Errands">0</td></tr>
   </table>
   <div class="counter" id="totalHours">Used: 0 / 168 hours</div>
   <div class="warning" id="overHours" style="display:none;">⚠️ Over 168 hours! Adjust your inputs.</div>
-  <div style="text-align:center;"><button type="button" onclick="buildFromInputs()">Build Calendar</button></div>
+  <br>
+  <label>Credit Hours: <input type="number" id="credits" value="15" onchange="calcStudyHours()"></label>
+
+  <h3>Enter Work Hours for Each Day</h3>
+  <div id="workInputs">
+    <label>Sunday Start: <input type="time" id="workStart0"> End: <input type="time" id="workEnd0"></label><br>
+    <label>Monday Start: <input type="time" id="workStart1" value="09:00"> End: <input type="time" id="workEnd1" value="17:00"></label><br>
+    <label>Tuesday Start: <input type="time" id="workStart2" value="09:00"> End: <input type="time" id="workEnd2" value="17:00"></label><br>
+    <label>Wednesday Start: <input type="time" id="workStart3" value="09:00"> End: <input type="time" id="workEnd3" value="17:00"></label><br>
+    <label>Thursday Start: <input type="time" id="workStart4" value="09:00"> End: <input type="time" id="workEnd4" value="17:00"></label><br>
+    <label>Friday Start: <input type="time" id="workStart5" value="09:00"> End: <input type="time" id="workEnd5" value="17:00"></label><br>
+    <label>Saturday Start: <input type="time" id="workStart6"> End: <input type="time" id="workEnd6"></label><br>
+  </div>
+  <br>
+  <div style="text-align:center;">
+    <button type="button" onclick="buildCalendar()">Build Calendar</button>
+  </div>
 </form>
-
-<!-- PART 2: DRAGGABLE CALENDAR -->
-<h3>Part 2: Weekly Calendar – Edit As Needed</h3>
-<div class="drag-area" id="dragArea"></div>
-
-<div class="counter" id="calendarHours">Used: 0 / 168 hours</div>
-<div class="warning" id="calendarWarning" style="display:none;">⚠️ You've exceeded 168 hours!</div>
+<h3>Your Weekly Calendar</h3>
+<div class="counter" id="calendarUsed">Used: 0 / 336 blocks</div>
+<div class="warning" id="calendarWarning" style="display:none;">⚠️ Overbooked! You’ve exceeded 336 half-hour blocks.</div>
 
 <table>
   <thead>
     <tr>
       <th>Time</th>
-      <th>Sunday</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th>
-      <th>Thursday</th><th>Friday</th><th>Saturday</th>
+      <th>Sunday</th>
+      <th>Monday</th>
+      <th>Tuesday</th>
+      <th>Wednesday</th>
+      <th>Thursday</th>
+      <th>Friday</th>
+      <th>Saturday</th>
     </tr>
   </thead>
   <tbody id="calendarBody"></tbody>
 </table>
 
 <script>
-const categories = {
-  Sleep: "💤", Work: "💼", Personal: "🩺", Grooming: "🧼", Fitness: "🏋️",
-  Household: "🧹", Meals: "🍽️", Family: "👨‍👩‍👧", Social: "🎉", Finance: "💰",
-  Academic: "📚", Learning: "📖", Leisure: "🎮", Errands: "🚗"
-};
-const colors = {
-  Sleep: "Sleep", Work: "Work", Personal: "Personal", Grooming: "Grooming",
-  Fitness: "Fitness", Household: "Household", Meals: "Meals", Family: "Family",
-  Social: "Social", Finance: "Finance", Academic: "Academic", Learning: "Learning",
-  Leisure: "Leisure", Errands: "Errands"
-};
-
-const timeSlots = Array.from({ length: 17 }, (_, i) => {
-  const hour = 6 + i;
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  return ((hour - 1) % 12 + 1) + ":00 " + ampm;
-});
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const activities = ["Sleep","Work","Personal","Grooming","Fitness","Household","Meals","Family","Social","Finance","Class","Studying","Leisure","Errands"];
 
 function calcStudyHours() {
-  const credits = parseInt(document.getElementById("credits").value || 0);
-  document.getElementById("Academic").value = credits * 2;
-  calcTotalHours();
+  const credits = parseInt(document.getElementById("credits").value);
+  document.getElementById("Studying").value = credits * 2;
+  updateTotalHours();
 }
 
-function calcTotalHours() {
-  const form = document.getElementById("timeForm");
+function updateTotalHours() {
   let total = 0;
-  for (const field of form.querySelectorAll("input[type=number]")) {
-    if (field.name && field.name !== "Academic") total += parseInt(field.value || 0);
-  }
-  total += parseInt(document.getElementById("Academic").value || 0);
-  document.getElementById("totalHours").textContent = `Used: ${total} / 168 hours`;
-  document.getElementById("overHours").style.display = total > 168 ? "block" : "none";
-}
-
-document.querySelectorAll("input[type=number]").forEach(i => {
-  i.addEventListener("input", calcTotalHours);
-});
-
-function buildFromInputs() {
-  document.getElementById("dragArea").innerHTML = '';
-  const form = document.getElementById("timeForm");
-  for (const input of form.querySelectorAll("input[name]")) {
-    const cat = input.name;
-    const hours = parseInt(input.value || 0);
-    for (let i = 0; i < hours; i++) {
-      const block = document.createElement("div");
-      block.className = `activity ${colors[cat]}`;
-      block.textContent = `${categories[cat]} ${cat}`;
-      block.setAttribute("draggable", "true");
-      block.dataset.type = cat;
-      block.addEventListener("dragstart", e => {
-        e.dataTransfer.setData("text/plain", cat);
-      });
-      document.getElementById("dragArea").appendChild(block);
-    }
-  }
-}
-
-// Calendar creation
-const calendarBody = document.getElementById("calendarBody");
-function buildCalendar() {
-  for (let i = 0; i < timeSlots.length; i++) {
-    const row = document.createElement("tr");
-    row.innerHTML = `<td><strong>${timeSlots[i]}</strong></td>`;
-    for (let d = 0; d < 7; d++) {
-      const cell = document.createElement("td");
-      cell.className = "dropzone";
-      cell.dataset.filled = "false";
-      cell.addEventListener("dragover", e => { e.preventDefault(); cell.classList.add("over"); });
-      cell.addEventListener("dragleave", () => cell.classList.remove("over"));
-      cell.addEventListener("drop", e => {
-        e.preventDefault();
-        const type = e.dataTransfer.getData("text/plain");
-        const icon = categories[type];
-        cell.textContent = `${icon} ${type}`;
-        cell.className = `dropzone ${colors[type]}`;
-        cell.dataset.filled = "true";
-        updateCalendarHours();
-      });
-      cell.addEventListener("click", () => {
-        cell.textContent = "";
-        cell.className = "dropzone";
-        cell.dataset.filled = "false";
-        updateCalendarHours();
-      });
-      row.appendChild(cell);
-    }
-    calendarBody.appendChild(row);
-  }
-}
-
-function updateCalendarHours() {
-  let total = 0;
-  document.querySelectorAll("td.dropzone").forEach(c => {
-    if (c.dataset.filled === "true") total++;
+  activities.forEach(act => {
+    const hours = parseFloat(document.getElementById(act).value) || 0;
+    total += hours;
   });
-  document.getElementById("calendarHours").textContent = `Used: ${total} / 168 hours`;
-  document.getElementById("calendarWarning").style.display = total > 168 ? "block" : "none";
+  document.getElementById("totalHours").innerText = `Used: ${total} / 168 hours`;
+  document.getElementById("overHours").style.display = total > 168 ? 'block' : 'none';
 }
 
-// Init
-calcStudyHours();
-calcTotalHours();
-buildCalendar();
+activities.forEach(id => {
+  const input = document.getElementById(id);
+  if (input) input.addEventListener('input', updateTotalHours);
+});
+updateTotalHours();
+
+function buildCalendar() {
+  const calendarBody = document.getElementById("calendarBody");
+  calendarBody.innerHTML = "";
+  const timeBlocks = [];
+  for (let h = 6; h < 30; h++) {
+    const hour = h % 24;
+    const label = (hour % 12 === 0 ? 12 : hour % 12) + (hour < 12 || hour === 24 ? ":00 AM" : ":00 PM");
+    const label2 = (hour % 12 === 0 ? 12 : hour % 12) + (hour < 12 || hour === 24 ? ":30 AM" : ":30 PM");
+    timeBlocks.push(label, label2);
+  }
+
+  const blockData = {};
+  activities.forEach(act => blockData[act] = 0);
+
+  timeBlocks.forEach((label, i) => {
+    const tr = document.createElement("tr");
+    const tCell = document.createElement("td");
+    tCell.textContent = label;
+    tr.appendChild(tCell);
+    for (let d = 0; d < 7; d++) {
+      const td = document.createElement("td");
+      td.classList.add("dropzone");
+      td.dataset.day = d;
+      td.dataset.block = i;
+      tr.appendChild(td);
+    }
+    calendarBody.appendChild(tr);
+  });
+
+  // Fill sleep
+  for (let d = 0; d < 7; d++) {
+    for (let h = 22; h < 30; h++) {
+      let i1 = (h - 6) * 2;
+      if (i1 >= 0 && i1 < 48) calendarBody.rows[i1]?.cells[d + 1].innerHTML = `<div class="activity Sleep">Sleep</div>`;
+      if (calendarBody.rows[i1 + 1]) calendarBody.rows[i1 + 1].cells[d + 1].innerHTML = `<div class="activity Sleep">Sleep</div>`;
+    }
+  }
+
+  // Fill work
+  for (let d = 0; d < 7; d++) {
+    const start = document.getElementById(`workStart${d}`).value;
+    const end = document.getElementById(`workEnd${d}`).value;
+    if (start && end) {
+      let s = parseTime(start), e = parseTime(end);
+      for (let t = s; t < e; t += 0.5) {
+        const r = Math.floor((t - 6) * 2);
+        if (r >= 0 && r < calendarBody.rows.length) {
+          calendarBody.rows[r].cells[d + 1].innerHTML = `<div class="activity Work">Work</div>`;
+        }
+      }
+    }
+  }
+
+  updateScheduledCounts();
+}
+function parseTime(str) {
+  const [h, m] = str.split(':').map(Number);
+  return h + m / 60;
+}
+
+function updateScheduledCounts() {
+  const counts = {};
+  activities.forEach(act => counts[act] = 0);
+
+  document.querySelectorAll(".activity").forEach(div => {
+    const cls = div.classList[1];
+    if (counts[cls] !== undefined) counts[cls] += 0.5;
+  });
+
+  let total = 0;
+  activities.forEach(act => {
+    const count = counts[act] || 0;
+    total += count;
+    const est = parseFloat(document.getElementById(act).value) || 0;
+    const countCell = document.getElementById("count-" + act);
+    if (countCell) {
+      countCell.textContent = count;
+      countCell.className = count === est ? "match" : "mismatch";
+    }
+  });
+
+  document.getElementById("calendarUsed").innerText = `Used: ${total} / 336 blocks`;
+  document.getElementById("calendarWarning").style.display = total > 336 ? 'block' : 'none';
+}
 </script>
 
 </body>
 </html>
+
