@@ -1,0 +1,118 @@
+<!-- FILE: index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Time Management Planner</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; margin: auto; }
+    h2 { text-align: center; }
+    label { font-weight: bold; display: block; margin-top: 1em; }
+    input, textarea { width: 100%; padding: 0.4em; margin-top: 0.2em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; vertical-align: top; }
+    td[contenteditable="true"] { background-color: #f9f9f9; cursor: text; }
+    button { margin-top: 1em; padding: 0.7em 1.2em; background-color: #0073e6; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background-color: #005bb5; }
+    .section { margin-bottom: 2em; }
+  </style>
+</head>
+<body>
+
+  <h2>Time Management Planner</h2>
+
+  <!-- Section 1: Time Calculator -->
+  <div class="section">
+    <h3>Step 1: Time Management Calculator</h3>
+    <label>Sleep (hours/day):</label>
+    <input type="number" id="sleep" min="0" max="24" />
+
+    <label>Work (hours/week):</label>
+    <input type="number" id="work" min="0" max="168" />
+
+    <label>Study (hours/week):</label>
+    <input type="number" id="study" min="0" max="168" />
+
+    <label>Commute (hours/week):</label>
+    <input type="number" id="commute" min="0" max="168" />
+
+    <label>Other responsibilities (hours/week):</label>
+    <input type="number" id="other" min="0" max="168" />
+
+    <button onclick="calculateTime()">Calculate Free Time</button>
+    <div id="timeResult" style="margin-top:1em;font-weight:bold;"></div>
+  </div>
+
+  <!-- Section 2: Reflection -->
+  <div class="section">
+    <h3>Step 2: Reflection</h3>
+    <label>Write 3–5 sentences about your results. What surprised you? What can you change?</label>
+    <textarea id="reflection" rows="5" placeholder="Type your reflection here..."></textarea>
+  </div>
+
+  <!-- Section 3: Weekly Calendar -->
+  <div class="section">
+    <h3>Step 3: Weekly Schedule</h3>
+    <p>Click in the table to fill in your weekly calendar. Add class time, study sessions, sleep, etc.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Sunday</th>
+          <th>Monday</th>
+          <th>Tuesday</th>
+          <th>Wednesday</th>
+          <th>Thursday</th>
+          <th>Friday</th>
+          <th>Saturday</th>
+        </tr>
+      </thead>
+      <tbody id="calendarBody"></tbody>
+    </table>
+  </div>
+
+  <button onclick="downloadPlan()">Download Weekly Plan</button>
+
+  <script>
+    const calendarBody = document.getElementById("calendarBody");
+    const times = Array.from({length: 17}, (_, i) => `${6+i}:00 ${i+6 < 12 ? 'AM' : 'PM'}`);
+    times.forEach(time => {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td><strong>${time}</strong></td>` + Array(7).fill(`<td contenteditable="true"></td>`).join("");
+      calendarBody.appendChild(row);
+    });
+
+    function calculateTime() {
+      const sleep = parseFloat(document.getElementById("sleep").value || 0) * 7;
+      const work = parseFloat(document.getElementById("work").value || 0);
+      const study = parseFloat(document.getElementById("study").value || 0);
+      const commute = parseFloat(document.getElementById("commute").value || 0);
+      const other = parseFloat(document.getElementById("other").value || 0);
+      const total = sleep + work + study + commute + other;
+      const free = 168 - total;
+      document.getElementById("timeResult").textContent =
+        free >= 0
+          ? `You have about ${free.toFixed(1)} hours of free time each week.`
+          : `You're overscheduled by ${Math.abs(free).toFixed(1)} hours/week.`;
+    }
+
+    function downloadPlan() {
+      const reflection = document.getElementById("reflection").value;
+      let calendarText = "Weekly Plan:\nTime\tSun\tMon\tTue\tWed\tThu\tFri\tSat\n";
+      const rows = calendarBody.querySelectorAll("tr");
+      rows.forEach((row, i) => {
+        const cells = row.querySelectorAll("td");
+        const time = times[i];
+        const rowText = Array.from(cells).map(cell => cell.innerText.trim()).join("\t");
+        calendarText += `${time}\t${rowText}\n`;
+      });
+      const blob = new Blob([`Reflection:\n${reflection}\n\n${calendarText}`], {type: "text/plain"});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "WeeklyTimePlan.txt";
+      link.click();
+    }
+  </script>
+</body>
+</html>
