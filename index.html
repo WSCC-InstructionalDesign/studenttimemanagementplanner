@@ -1,210 +1,1133 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Time Management Planner</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 1100px; margin: auto; padding: 1em; }
-    h2, h3 { text-align: center; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1em; font-size: 0.9em; }
-    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: center; vertical-align: top; }
-    input[type=number], input[type=time] { width: 80px; }
-    .dropzone { background: #f9f9f9; min-height: 2em; cursor: pointer; }
-    .activity { padding: 0.3em 0.6em; margin: 0.2em; border-radius: 4px; display: inline-block; white-space: nowrap; }
-    .counter, .warning { text-align: center; margin-top: 1em; font-weight: bold; }
-    .warning { color: red; }
-    .match { font-size: 0.9em; color: green; }
-    .mismatch { font-size: 0.9em; color: red; }
-    .Sleep { background: #cfe2f3; } .Work { background: #f4cccc; } .Personal { background: #fddde6; }
-    .Grooming { background: #e6ccff; } .Fitness { background: #d9ead3; } .Household { background: #fff2cc; }
-    .Meals { background: #ffe5b4; } .Family { background: #f4cccc; } .Social { background: #fce5cd; }
-    .Finance { background: #f9e7d9; } .Class { background: #d9d9d9; } .Studying { background: #ccf2f4; }
-    .Leisure { background: #f2e0f7; } .Errands { background: #daeaf6; }
-  </style>
-</head>
-<body>
+import React, { useState } from 'react';
+import { Download, Clock, Calendar, Move, Plus, Trash2, X, Moon, Briefcase, User, Activity, Home, UtensilsCrossed, Users, DollarSign, BookOpen, Book, Gamepad2, Car, ShoppingCart } from 'lucide-react';
 
-<h2>Student Time Management Planner</h2>
+export default function StudentTimeManager() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [estimatedHours, setEstimatedHours] = useState({});
+  const [workSchedule, setWorkSchedule] = useState({});
+  const [classSchedule, setClassSchedule] = useState([]);
+  const [calendar, setCalendar] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [placementMode, setPlacementMode] = useState(false);
 
-<h3>Activity Blocks</h3>
-<div id="activityBlocks" style="text-align:center;">
-  <p>Drag an activity block below to your calendar:</p>
-  <div id="blocks">
-    <div class="activity Sleep" draggable="true">Sleep</div>
-    <div class="activity Work" draggable="true">Work</div>
-    <div class="activity Personal" draggable="true">Personal</div>
-    <div class="activity Grooming" draggable="true">Grooming</div>
-    <div class="activity Fitness" draggable="true">Fitness</div>
-    <div class="activity Household" draggable="true">Household</div>
-    <div class="activity Meals" draggable="true">Meals</div>
-    <div class="activity Family" draggable="true">Family</div>
-    <div class="activity Social" draggable="true">Social</div>
-    <div class="activity Finance" draggable="true">Finance</div>
-    <div class="activity Class" draggable="true">Class</div>
-    <div class="activity Studying" draggable="true">Studying</div>
-    <div class="activity Leisure" draggable="true">Leisure</div>
-    <div class="activity Errands" draggable="true">Errands</div>
-  </div>
-</div>
+  const categories = [
+    { id: 'sleep', name: 'Sleep', color: 'bg-indigo-500', defaultHours: 56, icon: Moon },
+    { id: 'work', name: 'Work', color: 'bg-green-500', defaultHours: 20, icon: Briefcase },
+    { id: 'personal-care', name: 'Personal Care', color: 'bg-pink-500', defaultHours: 7, icon: User },
+    { id: 'fitness', name: 'Fitness/Gym', color: 'bg-red-500', defaultHours: 5, icon: Activity },
+    { id: 'chores', name: 'Household Chores', color: 'bg-yellow-500', defaultHours: 5, icon: Home },
+    { id: 'meals', name: 'Meals/Cooking', color: 'bg-orange-500', defaultHours: 10, icon: UtensilsCrossed },
+    { id: 'social', name: 'Social/Family/Friends', color: 'bg-purple-500', defaultHours: 8, icon: Users },
+    { id: 'financial', name: 'Financial Management', color: 'bg-cyan-500', defaultHours: 2, icon: DollarSign },
+    { id: 'class', name: 'Class', color: 'bg-blue-500', defaultHours: 15, icon: BookOpen },
+    { id: 'studying', name: 'Studying', color: 'bg-emerald-500', defaultHours: 30, icon: Book },
+    { id: 'leisure', name: 'Leisure/Hobbies', color: 'bg-rose-500', defaultHours: 10, icon: Gamepad2 },
+    { id: 'commuting', name: 'Commuting', color: 'bg-gray-500', defaultHours: 5, icon: Car },
+    { id: 'errands', name: 'Errands', color: 'bg-amber-500', defaultHours: 3, icon: ShoppingCart }
+  ];
 
-<h3>Estimated Weekly Hours</h3>
-<table>
-  <tr><th>Activity</th><th>Estimated Hours</th><th>Scheduled</th></tr>
-  <tr><td>Sleep</td><td><input type="number" id="Sleep" value="56"></td><td id="count-Sleep">0</td></tr>
-  <tr><td>Work</td><td><input type="number" id="Work" value="40"></td><td id="count-Work">0</td></tr>
-  <tr><td>Personal</td><td><input type="number" id="Personal" value="5"></td><td id="count-Personal">0</td></tr>
-  <tr><td>Grooming</td><td><input type="number" id="Grooming" value="5"></td><td id="count-Grooming">0</td></tr>
-  <tr><td>Fitness</td><td><input type="number" id="Fitness" value="3"></td><td id="count-Fitness">0</td></tr>
-  <tr><td>Household</td><td><input type="number" id="Household" value="5"></td><td id="count-Household">0</td></tr>
-  <tr><td>Meals</td><td><input type="number" id="Meals" value="14"></td><td id="count-Meals">0</td></tr>
-  <tr><td>Family</td><td><input type="number" id="Family" value="8"></td><td id="count-Family">0</td></tr>
-  <tr><td>Social</td><td><input type="number" id="Social" value="6"></td><td id="count-Social">0</td></tr>
-  <tr><td>Finance</td><td><input type="number" id="Finance" value="2"></td><td id="count-Finance">0</td></tr>
-  <tr><td>Class</td><td><input type="number" id="Class" value="15"></td><td id="count-Class">0</td></tr>
-  <tr><td>Studying</td><td><input type="number" id="Studying" value="30"></td><td id="count-Studying">0</td></tr>
-  <tr><td>Leisure</td><td><input type="number" id="Leisure" value="10"></td><td id="count-Leisure">0</td></tr>
-  <tr><td>Errands</td><td><input type="number" id="Errands" value="5"></td><td id="count-Errands">0</td></tr>
-</table>
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const hours = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5, 16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5, 22, 22.5, 23, 23.5, 0];
 
-<div class="counter" id="calendarUsed">Used: 0 / 336 blocks</div>
-<div class="warning" id="calendarWarning" style="display:none;">⚠️ Overbooked! You’ve exceeded 336 half-hour blocks.</div>
+  const [announcements, setAnnouncements] = useState('');
 
-<h3>Enter Work Hours for Each Day (for calendar building only)</h3>
-<div id="workInputs">
-  <label>Sunday Start: <input type="time" id="workStart0"> End: <input type="time" id="workEnd0"></label><br>
-  <label>Monday Start: <input type="time" id="workStart1"> End: <input type="time" id="workEnd1"></label><br>
-  <label>Tuesday Start: <input type="time" id="workStart2"> End: <input type="time" id="workEnd2"></label><br>
-  <label>Wednesday Start: <input type="time" id="workStart3"> End: <input type="time" id="workEnd3"></label><br>
-  <label>Thursday Start: <input type="time" id="workStart4"> End: <input type="time" id="workEnd4"></label><br>
-  <label>Friday Start: <input type="time" id="workStart5"> End: <input type="time" id="workEnd5"></label><br>
-  <label>Saturday Start: <input type="time" id="workStart6"> End: <input type="time" id="workEnd6"></label><br>
-</div>
+  // Function to announce changes to screen readers
+  const announceToScreenReader = (message) => {
+    setAnnouncements(message);
+    // Clear after a delay to allow for new announcements
+    setTimeout(() => setAnnouncements(''), 1000);
+  };
 
-<h3>Your Weekly Calendar</h3>
-<table>
-  <thead>
-    <tr><th>Time</th><th>Sunday</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th></tr>
-  </thead>
-  <tbody id="calendarBody"></tbody>
-</table>
-
-<div style="text-align:center; margin-top: 1em;">
-  <button onclick="buildCalendar()">Build Calendar</button>
-</div>
-
-<script>
-const activities = ["Sleep","Work","Personal","Grooming","Fitness","Household","Meals","Family","Social","Finance","Class","Studying","Leisure","Errands"];
-
-document.addEventListener("dragstart", function (event) {
-  if (event.target.classList.contains("activity")) {
-    event.dataTransfer.setData("text", event.target.outerHTML);
-  }
-});
-document.addEventListener("dragover", function (event) {
-  if (event.target.classList.contains("dropzone")) {
-    event.preventDefault();
-  }
-});
-document.addEventListener("drop", function (event) {
-  if (event.target.classList.contains("dropzone")) {
-    event.preventDefault();
-    event.target.innerHTML = event.dataTransfer.getData("text");
-    updateScheduledCounts();
-    checkWorkMatch();
-  }
-});
-
-function parseTime(str) {
-  const [h, m] = str.split(':').map(Number);
-  return h + m / 60;
-}
-
-function buildCalendar() {
-  const calendarBody = document.getElementById("calendarBody");
-  calendarBody.innerHTML = "";
-  let times = [];
-  for (let h = 6; h < 30; h++) {
-    let hour = h % 24;
-    times.push(`${String(hour).padStart(2,'0')}:00`, `${String(hour).padStart(2,'0')}:30`);
-  }
-  times.forEach((time, r) => {
-    let row = document.createElement("tr");
-    row.innerHTML = `<td>${time}</td>`;
-    for (let d = 0; d < 7; d++) {
-      let cell = document.createElement("td");
-      cell.className = "dropzone";
-      row.appendChild(cell);
+  const handleEstimationChange = (categoryId, value) => {
+    const numValue = parseInt(value) || 0;
+    setEstimatedHours(prev => ({
+      ...prev,
+      [categoryId]: numValue
+    }));
+    
+    // Announce changes to screen readers
+    const category = categories.find(c => c.id === categoryId);
+    if (numValue > 0) {
+      announceToScreenReader(`${category.name} updated to ${numValue} hours per week`);
     }
-    calendarBody.appendChild(row);
-  });
+  };
 
-  // Auto-fill sleep (11pm–7am)
-  for (let d = 0; d < 7; d++) {
-    for (let i = 34; i <= 47 || i < 2; i++) {
-      let idx = i % 48;
-      if (calendarBody.rows[idx]) {
-        calendarBody.rows[idx].cells[d + 1].innerHTML = `<div class="activity Sleep">Sleep</div>`;
+  const handleWorkScheduleChange = (day, field, value) => {
+    setWorkSchedule(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value
       }
-    }
-  }
+    }));
+  };
 
-  // Auto-fill work hours
-  for (let d = 0; d < 7; d++) {
-    const start = document.getElementById(`workStart${d}`).value;
-    const end = document.getElementById(`workEnd${d}`).value;
-    if (start && end) {
-      const s = parseTime(start), e = parseTime(end);
-      for (let t = s; t < e; t += 0.5) {
-        const idx = Math.floor((t - 6) * 2);
-        if (idx >= 0 && idx < 48 && calendarBody.rows[idx]) {
-          calendarBody.rows[idx].cells[d + 1].innerHTML = `<div class="activity Work">Work</div>`;
+  const addClass = () => {
+    const newClass = {
+      id: Date.now(),
+      name: '',
+      credits: 3,
+      days: [],
+      startTime: '',
+      endTime: '',
+      location: ''
+    };
+    setClassSchedule(prev => {
+      const newSchedule = [...prev, newClass];
+      announceToScreenReader(`Added new class ${newSchedule.length}. Please fill in the class details.`);
+      return newSchedule;
+    });
+  };
+
+  const removeClass = (id) => {
+    const classIndex = classSchedule.findIndex(cls => cls.id === id);
+    setClassSchedule(prev => prev.filter(cls => cls.id !== id));
+    announceToScreenReader(`Removed class ${classIndex + 1}`);
+  };
+
+  const updateClass = (id, field, value) => {
+    setClassSchedule(prev => prev.map(cls => 
+      cls.id === id ? { ...cls, [field]: value } : cls
+    ));
+  };
+
+  const calculateStudyHours = () => {
+    const totalCredits = classSchedule.reduce((sum, cls) => sum + (cls.credits || 0), 0);
+    return totalCredits * 2;
+  };
+
+  const getSuggestionPriority = () => {
+    const suggestions = [];
+    const sleep = estimatedHours['sleep'] || 0;
+    const leisure = estimatedHours['leisure'] || 0;
+    const social = estimatedHours['social'] || 0;
+    const work = estimatedHours['work'] || 0;
+    
+    if (sleep > 56) suggestions.push('Sleep: Consider 7-8 hours/night (49-56 hours/week)');
+    if (leisure > 15) suggestions.push('Leisure: Reduce recreational time during busy periods');
+    if (social > 12) suggestions.push('Social time: Limit to essential social activities');
+    if (work > 30) suggestions.push('Work: Reduce work hours if possible for better balance');
+    
+    return suggestions;
+  };
+
+  const formatTime = (hour) => {
+    const wholeHour = Math.floor(hour);
+    const minutes = hour % 1 === 0.5 ? '30' : '00';
+    
+    if (wholeHour === 0) return `12:${minutes} AM`;
+    if (wholeHour < 12) return `${wholeHour}:${minutes} AM`;
+    if (wholeHour === 12) return `12:${minutes} PM`;
+    return `${wholeHour - 12}:${minutes} PM`;
+  };
+
+  const initializeCalendar = () => {
+    const newCalendar = {};
+    
+    // Initialize calendar for all time slots including 30-minute intervals
+    days.forEach(day => {
+      newCalendar[day] = {};
+      // Create slots for all hours including half-hours (0, 0.5, 1, 1.5, ..., 23, 23.5)
+      for (let hour = 0; hour < 24; hour++) {
+        newCalendar[day][hour] = [];
+        newCalendar[day][hour + 0.5] = [];
+      }
+    });
+
+    // Add work schedule
+    Object.entries(workSchedule).forEach(([day, schedule]) => {
+      if (schedule.startTime && schedule.endTime) {
+        const [startHour, startMin] = schedule.startTime.split(':').map(Number);
+        const [endHour, endMin] = schedule.endTime.split(':').map(Number);
+        
+        const startDecimal = startHour + (startMin / 60);
+        const endDecimal = endHour + (endMin / 60);
+        
+        // Create 30-minute blocks
+        for (let time = startDecimal; time < endDecimal; time += 0.5) {
+          if (time < 24) {
+            newCalendar[day][time].push({
+              id: `work-${day}-${time}`,
+              category: 'work',
+              title: `Work${schedule.location ? ` at ${schedule.location}` : ''}`,
+              duration: 0.5,
+              locked: true
+            });
+          }
         }
       }
+    });
+
+    // Add class schedule
+    classSchedule.forEach(cls => {
+      if (cls.days && cls.days.length > 0 && cls.startTime && cls.endTime) {
+        cls.days.forEach(day => {
+          const [startHour, startMin] = cls.startTime.split(':').map(Number);
+          const [endHour, endMin] = cls.endTime.split(':').map(Number);
+          
+          const startDecimal = startHour + (startMin / 60);
+          const endDecimal = endHour + (endMin / 60);
+          const durationHours = endDecimal - startDecimal;
+          
+          // Create 30-minute blocks
+          for (let time = startDecimal; time < endDecimal; time += 0.5) {
+            if (time < 24) {
+              newCalendar[day][time].push({
+                id: `class-${cls.id}-${day}-${time}`,
+                category: 'class',
+                title: cls.name || 'Class',
+                location: cls.location || '',
+                duration: durationHours,
+                locked: true,
+                isFirstBlock: time === startDecimal
+              });
+            }
+          }
+        });
+      }
+    });
+
+    setCalendar(newCalendar);
+  };
+
+  const calculateScheduledHours = () => {
+    const scheduledHours = {};
+    
+    // Initialize all categories with 0 hours
+    categories.forEach(cat => {
+      scheduledHours[cat.id] = 0;
+    });
+
+    // Count scheduled hours for each category
+    Object.values(calendar).forEach(daySchedule => {
+      Object.values(daySchedule).forEach(hourEvents => {
+        hourEvents.forEach(event => {
+          if (scheduledHours[event.category] !== undefined) {
+            scheduledHours[event.category] += 0.5; // Each block is 30 minutes
+          }
+        });
+      });
+    });
+
+    return scheduledHours;
+  };
+
+  const getRemainingHours = () => {
+    const scheduled = calculateScheduledHours();
+    const remaining = {};
+    
+    categories.forEach(cat => {
+      const estimated = estimatedHours[cat.id] || 0;
+      const used = scheduled[cat.id] || 0;
+      
+      // Sleep is automatically considered complete since it doesn't need manual scheduling
+      if (cat.id === 'sleep') {
+        remaining[cat.id] = 0; // Always show as complete
+      } else {
+        remaining[cat.id] = Math.max(0, estimated - used);
+      }
+    });
+
+    return remaining;
+  };
+
+  const handleCellClick = (day, hour) => {
+    if (placementMode && selectedCategory) {
+      addEventToCalendar(day, hour, selectedCategory);
     }
-  }
+  };
 
-  updateScheduledCounts();
-  checkWorkMatch();
-}
+  const addEventToCalendar = (day, hour, categoryId) => {
+    const category = categories.find(c => c.id === categoryId);
+    const newEvent = {
+      id: `${categoryId}-${Date.now()}`,
+      category: categoryId,
+      title: category.name,
+      duration: 0.5,
+      locked: false
+    };
 
-function updateScheduledCounts() {
-  let counts = {};
-  activities.forEach(act => counts[act] = 0);
-  document.querySelectorAll(".activity").forEach(div => {
-    const cls = div.classList[1];
-    if (counts[cls] !== undefined) counts[cls] += 0.5;
-  });
-  let total = 0;
-  activities.forEach(act => {
-    const count = counts[act];
-    document.getElementById("count-" + act).textContent = count;
-    total += act !== "Work" ? count : 0; // Exclude work blocks from total
-  });
-  document.getElementById("calendarUsed").innerText = `Used: ${total} / 336 blocks`;
-  document.getElementById("calendarWarning").style.display = total > 336 ? 'block' : 'none';
-}
+    setCalendar(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [hour]: [...(prev[day][hour] || []), newEvent]
+      }
+    }));
 
-function checkWorkMatch() {
-  let expected = 0;
-  for (let d = 0; d < 7; d++) {
-    const start = document.getElementById(`workStart${d}`).value;
-    const end = document.getElementById(`workEnd${d}`).value;
-    if (start && end) {
-      const s = parseTime(start), e = parseTime(end);
-      expected += Math.max(0, e - s);
+    // Announce addition to screen readers
+    const timeStr = formatTime(hour);
+    announceToScreenReader(`Added ${category.name} to ${day} ${timeStr}`);
+  };
+
+  const removeEvent = (day, hour, eventId) => {
+    setCalendar(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [hour]: prev[day][hour].filter(event => event.id !== eventId)
+      }
+    }));
+  };
+
+  React.useEffect(() => {
+    initializeCalendar();
+  }, [workSchedule, classSchedule]);
+
+  const exportCalendar = (format) => {
+    let content = '';
+    const filename = `time-schedule.${format}`;
+    
+    if (format === 'csv') {
+      content = 'Day,Hour,Activity,Duration\n';
+      Object.entries(calendar).forEach(([day, daySchedule]) => {
+        Object.entries(daySchedule).forEach(([hour, events]) => {
+          events.forEach(event => {
+            content += `${day},${formatTime(parseFloat(hour))},${event.title},${event.duration}\n`;
+          });
+        });
+      });
+    } else if (format === 'json') {
+      content = JSON.stringify(calendar, null, 2);
     }
-  }
-  const scheduled = parseFloat(document.getElementById("count-Work").textContent);
-  const cell = document.getElementById("count-Work");
-  if (Math.abs(scheduled - expected) < 0.1) {
-    cell.className = "match";
-    cell.title = \"Work hours match entered schedule.\";
-  } else {
-    cell.className = "mismatch";
-    cell.title = `Scheduled: ${scheduled} vs. Entered: ${expected.toFixed(1)} hrs`;
-  }
-}
-</script>
 
-</body>
-</html>
+    const blob = new Blob([content], { type: format === 'csv' ? 'text/csv' : 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const CalendarCell = ({ day, hour, events }) => {
+    const timeStr = formatTime(hour);
+    const hasEvents = events.length > 0;
+    const eventNames = events.map(e => e.title).join(', ');
+    const cellId = `cell-${day}-${hour}`;
+    
+    return (
+      <div 
+        id={cellId}
+        className="min-h-12 cursor-pointer hover:bg-gray-50 focus:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors relative w-full h-full"
+        onClick={() => handleCellClick(day, hour)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCellClick(day, hour);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`${day} ${timeStr}. ${hasEvents ? `Currently scheduled: ${eventNames}` : 'Available time slot'}. ${placementMode && selectedCategory ? `Click to add ${categories.find(c => c.id === selectedCategory)?.name}` : 'Click to schedule activity'}`}
+        aria-describedby={hasEvents ? `${cellId}-events` : undefined}
+      >
+        {/* Screen reader description of events */}
+        {hasEvents && (
+          <div id={`${cellId}-events`} className="sr-only">
+            {events.map((event, index) => (
+              <span key={event.id}>
+                {event.title}{event.location ? ` at ${event.location}` : ''}{index < events.length - 1 ? ', ' : ''}
+              </span>
+            ))}
+          </div>
+        )}
+        
+        {events.map((event, index) => {
+          const category = categories.find(c => c.id === event.category);
+          const isClassEvent = event.category === 'class';
+          const isWorkEvent = event.category === 'work';
+          const IconComponent = category?.icon;
+          
+          return (
+            <div 
+              key={event.id}
+              className={`${category?.color || 'bg-gray-500'} text-white text-xs absolute inset-0 flex items-center justify-between group ${
+                isClassEvent ? 'border-2 border-blue-700' : ''
+              } ${
+                isWorkEvent ? 'border-2 border-green-700' : ''
+              } ${
+                events.length > 1 ? `z-${10 + index}` : ''
+              }`}
+              style={{
+                top: events.length > 1 ? `${index * 2}px` : '0',
+                left: events.length > 1 ? `${index * 2}px` : '0',
+                right: events.length > 1 ? `-${index * 2}px` : '0',
+                bottom: events.length > 1 ? `-${index * 2}px` : '0'
+              }}
+              role="region"
+              aria-label={`${event.title}${event.location ? ` at ${event.location}` : ''} scheduled for ${day} ${timeStr}`}
+            >
+              <div className="flex items-center gap-1 flex-1 truncate p-1">
+                {IconComponent && <IconComponent size={10} aria-hidden="true" className="flex-shrink-0" />}
+                <div className="truncate">
+                  <div className="font-medium leading-tight">{event.title}</div>
+                  {(isClassEvent && event.location) && (
+                    <div className="text-xs opacity-90 leading-tight" aria-label={`Location: ${event.location}`}>
+                      {event.location}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {!event.locked && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeEvent(day, hour, event.id);
+                    announceToScreenReader(`Removed ${event.title} from ${day} ${timeStr}`);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      removeEvent(day, hour, event.id);
+                      announceToScreenReader(`Removed ${event.title} from ${day} ${timeStr}`);
+                    }
+                  }}
+                  className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity flex-shrink-0 p-1 hover:bg-black hover:bg-opacity-20 focus:bg-black focus:bg-opacity-20 rounded focus:outline-none focus:ring-2 focus:ring-white"
+                  aria-label={`Remove ${event.title} from ${day} ${timeStr}`}
+                  tabIndex={0}
+                >
+                  <X size={10} aria-hidden="true" />
+                  <span className="sr-only">Remove activity</span>
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const CategoryBlock = ({ category }) => {
+    const remaining = getRemainingHours()[category.id] || 0;
+    const estimated = estimatedHours[category.id] || 0;
+    const needsAttention = remaining > 0 && estimated > 0;
+    const IconComponent = category.icon;
+    
+    return (
+      <button 
+        className={`${category.color} text-white p-4 rounded-lg cursor-pointer transition-all hover:scale-105 focus:scale-105 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-50 flex flex-col gap-1 relative min-h-[80px] ${
+          selectedCategory === category.id ? 'ring-4 ring-white ring-opacity-70' : ''
+        } ${needsAttention ? 'ring-4 ring-yellow-400 animate-pulse' : ''}`}
+        onClick={() => {
+          setSelectedCategory(category.id);
+          setPlacementMode(true);
+        }}
+        aria-pressed={selectedCategory === category.id}
+        aria-label={`Select ${category.name} activity block. ${estimated > 0 ? (remaining > 0 ? `${remaining} hours still needed to schedule.` : 'All hours scheduled.') : 'No time estimated for this category.'}`}
+      >
+        <div className="flex items-center gap-2">
+          <IconComponent size={18} aria-hidden="true" />
+          <span className="font-medium text-sm">{category.name}</span>
+        </div>
+        {estimated > 0 && (
+          <div className="text-xs opacity-90">
+            {remaining > 0 ? `${remaining}h needed` : '✓ Complete'}
+          </div>
+        )}
+        {needsAttention && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full" aria-hidden="true"></div>
+        )}
+      </button>
+    );
+  };
+
+  const RecommendationsPanel = () => {
+    const scheduledHours = calculateScheduledHours();
+    const remainingHours = getRemainingHours();
+    
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 id="recommendations-heading" className="text-lg font-bold mb-4 flex items-center gap-2">
+          📊 Your Time Recommendations
+        </h2>
+        <p className="text-gray-600 mb-4 text-sm">
+          Based on your estimates from Step 1. As you schedule activities, these recommendations will update.
+        </p>
+        
+        <div className="grid grid-cols-3 gap-3" role="region" aria-labelledby="recommendations-heading">
+          {categories.map(category => {
+            const estimated = estimatedHours[category.id] || 0;
+            const scheduled = category.id === 'sleep' ? estimated : (scheduledHours[category.id] || 0); // Sleep auto-counts as scheduled
+            const remaining = remainingHours[category.id] || 0;
+            const percentage = estimated > 0 ? (scheduled / estimated) * 100 : 0;
+            const IconComponent = category.icon;
+            
+            if (estimated === 0) return null; // Don't show categories with no estimate
+            
+            return (
+              <div key={category.id} className="border rounded-lg p-3" role="article" aria-labelledby={`progress-${category.id}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 ${category.color} rounded flex items-center justify-center`}>
+                      <IconComponent size={8} className="text-white" aria-hidden="true" />
+                    </div>
+                    <span id={`progress-${category.id}`} className="font-medium text-sm">{category.name}</span>
+                    {category.id === 'sleep' && (
+                      <span className="text-xs text-blue-600 bg-blue-100 px-1 py-0.5 rounded" aria-label="Automatically calculated">Auto</span>
+                    )}
+                  </div>
+                  <span className={`text-xs font-medium ${remaining > 0 ? 'text-orange-600' : 'text-green-600'}`} aria-label={remaining > 0 ? `${remaining} hours remaining` : 'Complete'}>
+                    {remaining > 0 ? `${remaining}h left` : '✓'}
+                  </span>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>{scheduled}h / {estimated}h</span>
+                    <span>{Math.round(percentage)}%</span>
+                  </div>
+                  
+                  {/* Progress bar */}
+                  <div className="w-full bg-gray-200 rounded-full h-3" role="progressbar" aria-valuenow={Math.round(percentage)} aria-valuemin="0" aria-valuemax="100" aria-label={`${category.name} progress: ${Math.round(percentage)}% complete, ${scheduled} of ${estimated} hours scheduled`}>
+                    <div 
+                      className={`h-3 rounded-full transition-all duration-300 ${
+                        percentage >= 100 ? 'bg-green-500' : 
+                        percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${Math.min(100, percentage)}%` }}
+                    ></div>
+                  </div>
+                  {/* Status text for screen readers */}
+                  <div className="sr-only">
+                    {percentage >= 100 ? `${category.name} is complete with all ${estimated} hours scheduled` : 
+                     percentage >= 50 ? `${category.name} is partially complete with ${scheduled} of ${estimated} hours scheduled` : 
+                     `${category.name} needs more time scheduled: ${scheduled} of ${estimated} hours completed`}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        
+        {Object.values(remainingHours).every(h => h === 0) && Object.values(estimatedHours).some(h => h > 0) && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg" role="alert" aria-live="polite">
+            <div className="text-green-800 font-medium">🎉 Congratulations!</div>
+            <div className="text-green-700 text-sm">You've scheduled all your estimated time! Your weekly plan is complete.</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4">
+      {/* Skip to main content link */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50"
+      >
+        Skip to main content
+      </a>
+      
+      {/* Live region for dynamic updates */}
+      <div id="live-updates" className="sr-only" aria-live="polite" aria-atomic="true">
+        {announcements}
+      </div>
+      
+      <div className="max-w-6xl mx-auto">
+        <header className="bg-white rounded-lg shadow-sm p-6 mb-6" role="banner">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Student Time Management Planner
+          </h1>
+          <p className="text-gray-600">
+            Create a realistic weekly schedule that balances your academics, work, and personal life.
+          </p>
+          
+          {/* Progress indicator */}
+          <nav aria-label="Progress through time management steps" className="mt-4">
+            <ol className="flex items-center gap-4">
+              {[
+                { step: 0, title: 'Estimate Hours', icon: Clock },
+                { step: 1, title: 'Work Schedule', icon: Briefcase },
+                { step: 2, title: 'Class Schedule', icon: BookOpen },
+                { step: 3, title: 'Build Calendar', icon: Calendar }
+              ].map(({ step, title, icon: Icon }) => (
+                <li key={step} className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    currentStep >= step ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
+                  }`} aria-hidden="true">
+                    {currentStep > step ? '✓' : <Icon size={16} />}
+                  </div>
+                  <span className={`text-sm ${currentStep >= step ? 'font-medium' : 'text-gray-500'}`}>
+                    {title}
+                  </span>
+                  {step < 3 && <span className="sr-only">,</span>}
+                </li>
+              ))}
+            </ol>
+            <div className="sr-only">
+              Currently on step {currentStep + 1} of 4: {
+                ['Estimate Hours', 'Work Schedule', 'Class Schedule', 'Build Calendar'][currentStep]
+              }
+            </div>
+          </nav>
+        </header>
+
+        <main id="main-content" role="main">
+        
+        {currentStep === 0 && (
+          <section className="bg-white rounded-lg shadow-sm p-6" aria-labelledby="time-estimates-heading">
+            <h2 id="time-estimates-heading" className="text-2xl font-bold mb-6">Step 1: Estimate Your Weekly Hours</h2>
+            <p className="text-gray-600 mb-6">
+              Estimate how many hours per week you spend on each activity. These estimates will guide your scheduling.
+            </p>
+
+            <fieldset className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <legend className="sr-only">Weekly hour estimates for different activities</legend>
+              {categories.map(category => {
+                const IconComponent = category.icon;
+                const totalHours = Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0);
+                const isOverLimit = totalHours > 168;
+                const currentCategoryHours = estimatedHours[category.id] || 0;
+                const inputId = `hours-${category.id}`;
+                
+                return (
+                  <div key={category.id} className={`border rounded-lg p-4 ${
+                    isOverLimit && currentCategoryHours > 0 ? 'border-red-300 bg-red-50' : ''
+                  }`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-4 h-4 ${category.color} rounded flex items-center justify-center`}>
+                        <IconComponent size={12} className="text-white" aria-hidden="true" />
+                      </div>
+                      <label htmlFor={inputId} className="block text-sm font-medium text-gray-700">
+                        {category.name}
+                      </label>
+                      {isOverLimit && currentCategoryHours > 0 && (
+                        <span className="text-xs text-red-600 font-medium" role="alert">Consider reducing</span>
+                      )}
+                    </div>
+                    {category.id === 'sleep' && (
+                      <div className="text-xs text-blue-600 mb-2 p-2 bg-blue-50 rounded">
+                        <strong>Sleep is important for your learning success.</strong> Please plan for a minimum of 7 hours a night so you're ready to learn.<br />
+                        <strong>Calculate as:</strong> 7 days × # of hours you sleep a night = weekly hours of sleep.<br />
+                        <strong>Example:</strong> 7 days a week × 8 hours a night = 56 hours of sleep a week.
+                      </div>
+                    )}
+                    {category.id === 'studying' && (
+                      <div className="text-xs text-blue-600 mb-2 p-2 bg-blue-50 rounded">
+                        <strong>Calculate as:</strong> classes × credit hours each × 2 hours study time = ___ hours recommended studying per week.<br />
+                        <strong>Example:</strong> Four 3-credit classes = 24 hours of studying a week (4×3×2=24)
+                      </div>
+                    )}
+                    {category.id === 'meals' && (
+                      <div className="text-xs text-blue-600 mb-2 p-2 bg-blue-50 rounded">
+                        <strong>Fueling your body is important so your brain & body are ready to learn.</strong> Plan for ~2 hours daily for meal prep & eating.
+                      </div>
+                    )}
+                    <input
+                      id={inputId}
+                      type="number"
+                      min="0"
+                      max="168"
+                      placeholder={`e.g., ${category.defaultHours}`}
+                      value={estimatedHours[category.id] || ''}
+                      onChange={(e) => handleEstimationChange(category.id, e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 text-base ${
+                        isOverLimit && currentCategoryHours > 0 
+                          ? 'border-red-300 focus:ring-red-500 bg-red-50' 
+                          : 'border-gray-300 focus:ring-blue-500'
+                      }`}
+                      aria-describedby={`${inputId}-help ${inputId}-unit`}
+                      aria-invalid={isOverLimit && currentCategoryHours > 0}
+                    />
+                    <div id={`${inputId}-unit`} className="text-xs text-gray-500">hours per week</div>
+                  </div>
+                );
+              })}
+            </fieldset>
+
+            <div className="mt-8">
+              {/* Total Hours Summary */}
+              <div className={`p-4 rounded-lg mb-4 ${
+                Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 168 
+                  ? 'bg-red-50 border-2 border-red-200' 
+                  : Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 150
+                  ? 'bg-yellow-50 border-2 border-yellow-200'
+                  : 'bg-green-50 border-2 border-green-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm">
+                    <span className={`font-medium ${
+                      Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 168 
+                        ? 'text-red-800' 
+                        : Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 150
+                        ? 'text-yellow-800'
+                        : 'text-green-800'
+                    }`}>
+                      Total estimated hours: {Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0)} / 168 hours per week
+                    </span>
+                  </div>
+                  {Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 168 && (
+                    <div className="text-red-600 font-bold">
+                      ⚠️ OVER LIMIT
+                    </div>
+                  )}
+                  {Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 150 && 
+                   Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) <= 168 && (
+                    <div className="text-yellow-600 font-bold">
+                      ⚠️ NEARLY FULL
+                    </div>
+                  )}
+                </div>
+
+                {/* Warning and Recommendations */}
+                {Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 168 && (
+                  <div className="mt-3 p-3 bg-red-100 rounded-lg">
+                    <h4 className="font-bold text-red-900 mb-2">🚨 Time Estimate Warning</h4>
+                    <p className="text-red-800 text-sm mb-3">
+                      You've estimated <strong>{Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0)} hours</strong> per week, 
+                      but there are only <strong>168 hours</strong> in a week. This schedule is impossible to maintain.
+                    </p>
+                    <div className="text-red-800 text-sm">
+                      <strong>💡 Specific recommendations for your schedule:</strong>
+                      <ul className="mt-2 ml-4 space-y-1">
+                        {getSuggestionPriority().map((suggestion, index) => (
+                          <li key={index}>• <strong>{suggestion}</strong></li>
+                        ))}
+                        {getSuggestionPriority().length === 0 && (
+                          <>
+                            <li>• <strong>Review all categories:</strong> Look for areas where you can be more efficient</li>
+                            <li>• <strong>Combine activities:</strong> Study while commuting, meal prep in batches</li>
+                            <li>• <strong>Prioritize essentials:</strong> Focus on health, work, and academics first</li>
+                          </>
+                        )}
+                      </ul>
+                      <p className="mt-2 text-xs text-red-700">
+                        💡 Need to reduce by <strong>{Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) - 168} hours</strong> to reach a realistic schedule.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 150 && 
+                 Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) <= 168 && (
+                  <div className="mt-3 p-3 bg-yellow-100 rounded-lg">
+                    <h4 className="font-bold text-yellow-900 mb-2">⚠️ Tight Schedule Notice</h4>
+                    <p className="text-yellow-800 text-sm">
+                      Your schedule is very full ({Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0)} hours). 
+                      Consider if this is sustainable and leaves room for unexpected events or rest.
+                    </p>
+                  </div>
+                )}
+
+                {Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) <= 150 && 
+                 Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 0 && (
+                  <div className="mt-3 p-3 bg-green-100 rounded-lg">
+                    <h4 className="font-bold text-green-900 mb-2">✅ Realistic Schedule</h4>
+                    <p className="text-green-800 text-sm">
+                      Your time estimates look realistic and sustainable! You have some flexibility for unexpected events.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="text-xs text-gray-500">
+                  💡 Tip: A sustainable schedule typically uses 140-160 hours, leaving time for flexibility
+                </div>
+                <button
+                  onClick={() => {
+                    setCurrentStep(1);
+                    announceToScreenReader('Moved to Step 2: Work Schedule');
+                  }}
+                  disabled={Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 168}
+                  className={`px-6 py-2 rounded-lg transition-colors ${
+                    Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 168
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
+                  title={Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 168 
+                    ? 'Please reduce your time estimates to 168 hours or less before continuing' 
+                    : 'Continue to Work Schedule'
+                  }
+                  aria-describedby="step1-error"
+                >
+                  {Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 168 
+                    ? 'Fix Time Estimates First' 
+                    : 'Continue to Work Schedule'
+                  }
+                </button>
+                {Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0) > 168 && (
+                  <div id="step1-error" className="sr-only" role="alert">
+                    Cannot proceed: total hours exceed 168 hours per week. Please reduce your estimates.
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {currentStep === 1 && (
+          <section className="bg-white rounded-lg shadow-sm p-6" aria-labelledby="work-schedule-heading">
+            <h2 id="work-schedule-heading" className="text-2xl font-bold mb-6">Step 2: Enter Your Work Schedule</h2>
+            <p className="text-gray-600 mb-6">
+              Add your work hours for each day of the week. These will be automatically blocked on your calendar.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="group" aria-labelledby="work-schedule-heading">
+              {days.map(day => {
+                const dayId = `work-${day.toLowerCase()}`;
+                return (
+                  <fieldset key={day} className="border rounded-lg p-4">
+                    <legend className="font-medium text-gray-700 mb-3">{day}</legend>
+                    <div className="space-y-3">
+                      <div>
+                        <label htmlFor={`${dayId}-start`} className="block text-sm text-gray-600 mb-1">Start Time</label>
+                        <input
+                          id={`${dayId}-start`}
+                          type="time"
+                          value={workSchedule[day]?.startTime || ''}
+                          onChange={(e) => handleWorkScheduleChange(day, 'startTime', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                          aria-describedby={`${dayId}-help`}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor={`${dayId}-end`} className="block text-sm text-gray-600 mb-1">End Time</label>
+                        <input
+                          id={`${dayId}-end`}
+                          type="time"
+                          value={workSchedule[day]?.endTime || ''}
+                          onChange={(e) => handleWorkScheduleChange(day, 'endTime', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                          aria-describedby={`${dayId}-help`}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor={`${dayId}-location`} className="block text-sm text-gray-600 mb-1">Location (optional)</label>
+                        <input
+                          id={`${dayId}-location`}
+                          type="text"
+                          placeholder="e.g., Restaurant, Office"
+                          value={workSchedule[day]?.location || ''}
+                          onChange={(e) => handleWorkScheduleChange(day, 'location', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                        />
+                      </div>
+                      <div id={`${dayId}-help`} className="sr-only">
+                        Work schedule for {day}. Leave times blank if not working this day.
+                      </div>
+                    </div>
+                  </fieldset>
+                );
+              })}
+            </div>
+
+            <nav className="mt-8 flex justify-between" aria-label="Step navigation">
+              <button
+                onClick={() => {
+                  setCurrentStep(0);
+                  announceToScreenReader('Moved back to Step 1: Time Estimates');
+                }}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 transition-colors"
+              >
+                Back to Time Estimates
+              </button>
+              <button
+                onClick={() => {
+                  setCurrentStep(2);
+                  announceToScreenReader('Moved to Step 3: Class Schedule');
+                }}
+                className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 transition-colors"
+              >
+                Continue to Classes
+              </button>
+            </nav>
+          </section>
+        )}
+
+        {currentStep === 2 && (
+          <section className="bg-white rounded-lg shadow-sm p-6" aria-labelledby="class-schedule-heading">
+            <h2 id="class-schedule-heading" className="text-2xl font-bold mb-6">Step 3: Enter Your Class Schedule</h2>
+            <p className="text-gray-600 mb-6">
+              Add each class with its meeting times. These will be blocked off on your calendar.
+            </p>
+
+            <div className="space-y-6">
+              {classSchedule.map(cls => (
+                <div key={cls.id} className="border rounded-lg p-4 bg-gray-50">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="font-medium text-gray-700">Class {classSchedule.indexOf(cls) + 1}</h3>
+                    <button
+                      onClick={() => removeClass(cls.id)}
+                      className="text-red-500 hover:text-red-700 transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Class Name</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Biology 101"
+                        value={cls.name}
+                        onChange={(e) => updateClass(cls.id, 'name', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Credit Hours</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="6"
+                        value={cls.credits}
+                        onChange={(e) => updateClass(cls.id, 'credits', parseInt(e.target.value) || 3)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Location (optional)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Room 205"
+                        value={cls.location}
+                        onChange={(e) => updateClass(cls.id, 'location', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Start Time</label>
+                      <input
+                        type="time"
+                        value={cls.startTime}
+                        onChange={(e) => updateClass(cls.id, 'startTime', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">End Time</label>
+                      <input
+                        type="time"
+                        value={cls.endTime}
+                        onChange={(e) => updateClass(cls.id, 'endTime', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Days of Week</label>
+                      <div className="flex flex-wrap gap-1">
+                        {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
+                          <button
+                            key={day}
+                            onClick={() => {
+                              const currentDays = cls.days || [];
+                              const newDays = currentDays.includes(day)
+                                ? currentDays.filter(d => d !== day)
+                                : [...currentDays, day];
+                              updateClass(cls.id, 'days', newDays);
+                            }}
+                            className={`px-2 py-1 text-xs rounded transition-colors ${
+                              (cls.days || []).includes(day)
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                            }`}
+                          >
+                            {day.slice(0, 3)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <div className="text-sm text-blue-800">
+                      <strong>Study Hours Recommendation:</strong> {cls.credits} credit hours × 2 = {cls.credits * 2} hours of studying per week
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Class button - now appears after all classes */}
+            <button
+              onClick={addClass}
+              className="mt-6 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-2"
+            >
+              <Plus size={16} />
+              Add Class
+            </button>
+
+            <div className="mt-8">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 className="font-medium text-blue-900 mb-2">📚 Study Time Calculation</h3>
+                <p className="text-blue-800 text-sm">
+                  Total Credits: {classSchedule.reduce((sum, cls) => sum + (cls.credits || 0), 0)} × 2 hours study time = 
+                  <strong> {calculateStudyHours()} hours recommended studying per week</strong>
+                </p>
+                <p className="text-blue-700 text-xs mt-1">
+                  Consider updating your "Studying" estimate in Step 1 to match this calculation.
+                </p>
+              </div>
+
+              <div className="flex justify-between">
+                <button
+                  onClick={() => setCurrentStep(1)}
+                  className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  Back to Work Schedule
+                </button>
+                <button
+                  onClick={() => setCurrentStep(3)}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Build Your Calendar
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {currentStep === 3 && (
+          <div className="space-y-6">
+            {/* Recommendations Panel */}
+            <section aria-labelledby="recommendations-heading">
+              <RecommendationsPanel />
+            </section>
+
+            {/* Activity Blocks */}
+            <section className="bg-white rounded-lg shadow-sm p-6" aria-labelledby="calendar-heading">
+              <h2 id="calendar-heading" className="text-2xl font-bold mb-6">Step 4: Build Your Calendar</h2>
+              <p className="text-gray-600 mb-4">
+                {placementMode 
+                  ? `Click on calendar cells to place "${categories.find(c => c.id === selectedCategory)?.name}" activities.`
+                  : 'Click on an activity block to select it, then click on calendar cells to schedule your time. Categories with yellow dots need more time scheduled! Note: Sleep time is automatically counted and does not need to be manually placed.'
+                }
+              </p>
+
+              <div className="mb-6">
+                <h3 id="activity-blocks-heading" className="font-medium mb-3">Activity Blocks</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3" role="group" aria-labelledby="activity-blocks-heading">
+                  {categories.filter(cat => cat.id !== 'class' && cat.id !== 'work' && cat.id !== 'sleep').map(category => (
+                    <CategoryBlock key={category.id} category={category} />
+                  ))}
+                </div>
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg" role="note">
+                  <div className="text-sm text-blue-800">
+                    <strong>💤 Sleep Time:</strong> Sleep hours are automatically counted from your Step 1 estimate - no need to manually schedule sleep blocks on your calendar.
+                  </div>
+                </div>
+                {placementMode && (
+                  <button
+                    onClick={() => {
+                      setPlacementMode(false);
+                      setSelectedCategory(null);
+                      announceToScreenReader('Cancelled activity placement mode');
+                    }}
+                    className="mt-3 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 transition-colors"
+                  >
+                    Cancel Placement
+                  </button>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center mb-4">
+                <h3 id="calendar-grid-heading" className="text-lg font-bold flex items-center gap-2">
+                  <Calendar className="text-blue-500" aria-hidden="true" />
+                  Weekly Calendar - 30 Minute Blocks (6:00 AM - 12:00 AM)
+                </h3>
+                <div className="flex gap-2" role="group" aria-label="Export calendar options">
+                  <button
+                    onClick={() => {
+                      exportCalendar('csv');
+                      announceToScreenReader('Calendar exported as CSV file');
+                    }}
+                    className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 focus:ring-2 focus:ring-green-500 transition-colors flex items-center gap-1"
+                  >
+                    <Download size={14} aria-hidden="true" />
+                    CSV
+                  </button>
+                  <button
+                    onClick={() => {
+                      exportCalendar('json');
+                      announceToScreenReader('Calendar exported as JSON file');
+                    }}
+                    className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 transition-colors flex items-center gap-1"
+                  >
+                    <Download size={14} aria-hidden="true" />
+                    JSON
+                  </button>
+                </div>
+              </div>
+
+              <div className="border rounded-lg overflow-auto">
+                <table className="w-full min-w-max border-collapse" role="grid" aria-label="Weekly calendar showing scheduled activities in 30-minute time blocks">
+                  <thead>
+                    <tr role="row">
+                      <th scope="col" className="bg-gray-100 p-3 font-medium text-center border-r">
+                        Time
+                      </th>
+                      {days.map(day => (
+                        <th key={day} scope="col" className="bg-gray-100 p-3 font-medium text-center border-r">
+                          {day}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {hours.map(hour => (
+                      <tr key={hour} role="row">
+                        <th scope="row" className="text-xs text-center p-1 bg-gray-50 font-medium border-r sticky left-0">
+                          {formatTime(hour)}
+                        </th>
+                        {days.map(day => (
+                          <td key={`${day}-${hour}`} role="gridcell" className="p-0 border-r">
+                            <CalendarCell 
+                              day={day}
+                              hour={hour}
+                              events={calendar[day]?.[hour] || []}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <nav className="flex justify-between" aria-label="Final step navigation">
+              <button
+                onClick={() => {
+                  setCurrentStep(2);
+                  announceToScreenReader('Moved back to Step 3: Class Schedule');
+                }}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:ring-2 focus:ring-gray-500 transition-colors"
+              >
+                Back to Classes
+              </button>
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-600" role="status" aria-live="polite">
+                  Total Scheduled: {Object.values(calculateScheduledHours()).reduce((sum, hours) => sum + hours, 0) + (estimatedHours['sleep'] || 0)}h of {Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0)}h estimated
+                </div>
+                <button
+                  onClick={() => {
+                    const totalEstimated = Object.values(estimatedHours).reduce((sum, hours) => sum + hours, 0);
+                    const totalScheduled = Object.values(calculateScheduledHours()).reduce((sum, hours) => sum + hours, 0) + (estimatedHours['sleep'] || 0);
+                    const completionRate = totalEstimated > 0 ? Math.round((totalScheduled / totalEstimated) * 100) : 0;
+                    const message = `Assignment completed! You've scheduled ${totalScheduled} hours (${completionRate}% of your estimated ${totalEstimated} hours). Your calendar has been generated and can be exported. Sleep time (${estimatedHours['sleep'] || 0}h) is automatically included.`;
+                    alert(message);
+                    announceToScreenReader(message);
+                  }}
+                  className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:ring-2 focus:ring-green-500 transition-colors"
+                >
+                  Complete Assignment
+                </button>
+              </div>
+            </nav>
+          </div>
+        )}
+        </main>
+      </div>
+    </div>
+  );
+}
